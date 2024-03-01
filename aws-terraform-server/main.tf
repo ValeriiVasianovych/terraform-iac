@@ -14,20 +14,28 @@ provider "aws" {
 }
 
 resource "aws_instance" "my_ubuntu" {
-  ami           = "ami-07d9b9ddc6cd8dd30"
-  instance_type = "t2.micro"
-  key_name      = "ServersKey"
-  vpc_security_group_ids = [aws_security_group.instance.id]
+  ami                    = "ami-07d9b9ddc6cd8dd30"
+  instance_type          = "t2.micro"
+  key_name               = "ServersKey"
+  vpc_security_group_ids = [aws_security_group.terraform-server.id]
+  user_data              = templatefile("template.sh.tpl", {
+	f_name  = "Valerii"
+	l_name  = "Vasianovych"
+	email   = "valerii.vasianovych.2003@gmail.com"
+	age     = "20"
+	friends = ["Sarah", "John", "Michael"]
+  })
+
 
   tags = {
-    Name    = "NewUbuntuInstance"
+    Name    = "TerraformUbuntuServer"
     Owner   = "Valerii Vasianovych"
-    Project = "AWS Instance Creation"
+    Project = "AWS Instance Creation with Terraform and Server"
   }
 }
 
-resource "aws_security_group" "instance" {
-  name        = "terraform_example_instance"
+resource "aws_security_group" "terraform-server" {
+  name        = "terraform_server"
   description = "An example security group for Terraform"
 
   ingress {
