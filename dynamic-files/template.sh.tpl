@@ -13,8 +13,8 @@ sudo bash -c 'cat <<EOF > /var/www/html/index.html
 </head>
 <style>
     body {
-        background-color: blue;
-        color: gold;
+        background-color: red;
+        color: white;
         font-size: 48px;
         text-align: center;
         margin-top: 200px;
@@ -23,6 +23,13 @@ sudo bash -c 'cat <<EOF > /var/www/html/index.html
 </style>
 <body>
     <h1>Terraform is Awesome</h1>
+	<p>Deployed by Terraform</p>
+	<p>Owner: ${f_name} ${l_name} ${age}</p><br>
+    <p>Friends: ${email} </p><br>
+	
+	%{ for x in friends ~}
+	Hello to ${x} from ${f_name} ${l_name} <br>
+	%{ endfor ~}
 </body>
 </html>
 EOF'

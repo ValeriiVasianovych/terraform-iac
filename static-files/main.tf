@@ -10,14 +10,15 @@ terraform {
 }
 
 provider "aws" {
-  #region = "us-east-1"
+  region = "us-east-1"
 }
 
 resource "aws_instance" "my_ubuntu" {
-  ami           = "ami-07d9b9ddc6cd8dd30"
-  instance_type = "t2.micro"
-  key_name      = "ServersKey"
+  ami                    = "ami-07d9b9ddc6cd8dd30"
+  instance_type          = "t2.micro"
+  key_name               = "ServersKey"
   vpc_security_group_ids = [aws_security_group.instance.id]
+  user_data              = file("script.sh")
 
   tags = {
     Name    = "NewUbuntuInstance"
@@ -30,25 +31,16 @@ resource "aws_security_group" "instance" {
   name        = "terraform_example_instance"
   description = "An example security group for Terraform"
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  dynamic "ingress" {
+    for_each =  ["80", "443", "22"]
 
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {
