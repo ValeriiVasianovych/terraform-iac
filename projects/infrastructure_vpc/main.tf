@@ -32,10 +32,8 @@ data "aws_ami" "latest_ubuntu" {
   }
 }
 
-# Create resources
-
 # Create VPC
-resource "aws_vpc" "Infrastructure_vpc" {
+resource "aws_vpc" "infrastructure_vpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
     Name    = "Infrastructure_vpc"
@@ -44,9 +42,19 @@ resource "aws_vpc" "Infrastructure_vpc" {
   }
 }
 
+# Create Internet Gateway
+resource "aws_internet_gateway" "infrastructure_igw" {
+  vpc_id = aws_vpc.infrastructure_vpc.id
+  tags = {
+    Name    = "Infrastructure_IGW"
+    Account = "IGW in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "IGW in Region: ${data.aws_region.current.description}"
+  } 
+}
+
 # Create Public Subnet A
 resource "aws_subnet" "public_subnet_a" {
-  vpc_id            = aws_vpc.Infrastructure_vpc.id
+  vpc_id            = aws_vpc.infrastructure_vpc.id
   map_public_ip_on_launch = true
   availability_zone = data.aws_availability_zones.available.names[0]
   cidr_block        = "10.0.10.0/24"
@@ -59,7 +67,7 @@ resource "aws_subnet" "public_subnet_a" {
 
 # Create Public Subnet B
 resource "aws_subnet" "public_subnet_b" {
-  vpc_id            = aws_vpc.Infrastructure_vpc.id
+  vpc_id            = aws_vpc.infrastructure_vpc.id
   map_public_ip_on_launch = true
   availability_zone = data.aws_availability_zones.available.names[1]
   cidr_block        = "10.0.20.0/24"
@@ -72,7 +80,7 @@ resource "aws_subnet" "public_subnet_b" {
 
 # Create Private Subnet A
 resource "aws_subnet" "private_subnet_a" {
-  vpc_id            = aws_vpc.Infrastructure_vpc.id
+  vpc_id            = aws_vpc.infrastructure_vpc.id
   availability_zone = data.aws_availability_zones.available.names[0]
   cidr_block        = "10.0.11.0/24"
   tags = {
@@ -84,7 +92,7 @@ resource "aws_subnet" "private_subnet_a" {
 
 # Create Private Subnet B
 resource "aws_subnet" "private_subnet_b" {
-  vpc_id            = aws_vpc.Infrastructure_vpc.id
+  vpc_id            = aws_vpc.infrastructure_vpc.id
   availability_zone = data.aws_availability_zones.available.names[1]
   cidr_block        = "10.0.21.0/24"
   tags = {
@@ -96,7 +104,7 @@ resource "aws_subnet" "private_subnet_b" {
 
 # Create DB Subnet A
 resource "aws_subnet" "db_subnet_a" {
-  vpc_id            = aws_vpc.Infrastructure_vpc.id
+  vpc_id            = aws_vpc.infrastructure_vpc.id
   availability_zone = data.aws_availability_zones.available.names[0]
   cidr_block        = "10.0.12.0/24"
   tags = {
@@ -108,7 +116,7 @@ resource "aws_subnet" "db_subnet_a" {
 
 # Create DB Subnet B
 resource "aws_subnet" "db_subnet_b" {
-  vpc_id            = aws_vpc.Infrastructure_vpc.id
+  vpc_id            = aws_vpc.infrastructure_vpc.id
   availability_zone = data.aws_availability_zones.available.names[1]
   cidr_block        = "10.0.22.0/24"
   tags = {
@@ -118,64 +126,12 @@ resource "aws_subnet" "db_subnet_b" {
   }
 }
 
-# Create Internet Gateway
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.Infrastructure_vpc.id
-  tags = {
-    Name    = "Internet Gateway"
-    Account = "IGW in Account: ${data.aws_caller_identity.current.account_id}"
-    Region  = "IGW in Region: ${data.aws_region.current.description}"
-  }
-}
-
-# Create Elastic IP for NAT Gateway A
-resource "aws_eip" "nat_eip_a" {
-  vpc = true
-  tags = {
-    Name    = "NAT EIP"
-    Account = "EIP in Account: ${data.aws_caller_identity.current.account_id}"
-    Region  = "EIP in Region: ${data.aws_region.current.description}"
-  }
-}
-
-# Create NAT Gateway for Private Subnet A
-resource "aws_nat_gateway" "nat_gateway_a" {
-  allocation_id = aws_eip.nat_eip_a.id
-  subnet_id     = aws_subnet.private_subnet_a.id
-  tags = {
-    Name    = "NAT Gateway A"
-    Account = "NAT Gateway in Account: ${data.aws_caller_identity.current.account_id}"
-    Region  = "NAT Gateway in Region: ${data.aws_region.current.description}"
-  }
-}
-
-# Create Elastic IP for NAT Gateway B
-resource "aws_eip" "nat_eip_b" {
-  vpc = true
-  tags = {
-    Name    = "NAT EIP"
-    Account = "EIP in Account: ${data.aws_caller_identity.current.account_id}"
-    Region  = "EIP in Region: ${data.aws_region.current.description}"
-  }
-}
-
-# Create NAT Gateway for Private Subnet B
-resource "aws_nat_gateway" "nat_gateway_b" {
-  allocation_id = aws_eip.nat_eip_b.id
-  subnet_id     = aws_subnet.private_subnet_b.id
-  tags = {
-    Name    = "NAT Gateway B"
-    Account = "NAT Gateway in Account: ${data.aws_caller_identity.current.account_id}"
-    Region  = "NAT Gateway in Region: ${data.aws_region.current.description}"
-  }
-}
-
-# Create Route Table for Public Subnet
+# Create Route Table for Public Subnets
 resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.Infrastructure_vpc.id
+  vpc_id = aws_vpc.infrastructure_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.infrastructure_igw.id
   }
   tags = {
     Name    = "Public Route Table"
@@ -184,61 +140,9 @@ resource "aws_route_table" "public_route_table" {
   }
 }
 
-# Associate Public Subnet A with Public Route Table
-resource "aws_route_table_association" "public_subnet_a_association" {
-  subnet_id      = aws_subnet.public_subnet_a.id
-  route_table_id = aws_route_table.public_route_table.id
-}
-
-# Associate Public Subnet B with Public Route Table
-resource "aws_route_table_association" "public_subnet_b_association" {
-  subnet_id      = aws_subnet.public_subnet_b.id
-  route_table_id = aws_route_table.public_route_table.id
-}
-
-# Create Route Table for Private Subnet A with NAT Gateway A
-resource "aws_route_table" "private_route_table_a" {
-  vpc_id = aws_vpc.Infrastructure_vpc.id
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway_a.id
-  }
-  tags = {
-    Name    = "Private Route Table A"
-    Account = "Route Table in Account: ${data.aws_caller_identity.current.account_id}"
-    Region  = "Route Table in Region: ${data.aws_region.current.description}"
-  }
-}
-
-# Create Route Table for Private Subnet B with NAT Gateway B
-resource "aws_route_table" "private_route_table_b" {
-  vpc_id = aws_vpc.Infrastructure_vpc.id
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway_b.id
-  }
-  tags = {
-    Name    = "Private Route Table B"
-    Account = "Route Table in Account: ${data.aws_caller_identity.current.account_id}"
-    Region  = "Route Table in Region: ${data.aws_region.current.description}"
-  }
-}
-
-# Associate Private Subnet A with Private Route Table A
-resource "aws_route_table_association" "private_subnet_a_association" {
-  subnet_id      = aws_subnet.private_subnet_a.id
-  route_table_id = aws_route_table.private_route_table_a.id
-}
-
-# Associate Private Subnet B with Private Route Table B
-resource "aws_route_table_association" "private_subnet_b_association" {
-  subnet_id      = aws_subnet.private_subnet_b.id
-  route_table_id = aws_route_table.private_route_table_b.id
-}
-
-# Create Route Table for DB Subnet
+# Create Route Table For DB Subnets
 resource "aws_route_table" "db_route_table" {
-  vpc_id = aws_vpc.Infrastructure_vpc.id
+  vpc_id = aws_vpc.infrastructure_vpc.id
   tags = {
     Name    = "DB Route Table"
     Account = "Route Table in Account: ${data.aws_caller_identity.current.account_id}"
@@ -246,139 +150,224 @@ resource "aws_route_table" "db_route_table" {
   }
 }
 
-# Associate DB Subnet A with DB Route Table
-resource "aws_route_table_association" "db_subnet_a_association" {
+# Create Route Table for Private Subnet A
+resource "aws_route_table" "private_route_table_a" {
+  vpc_id = aws_vpc.infrastructure_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway_a.id
+  }
+
+  tags = {
+    Name    = "Private Route Table A"
+    Account = "Route Table in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Route Table in Region: ${data.aws_region.current.description}"
+  }
+}
+
+# Create Route Table for Private Subnet B
+resource "aws_route_table" "private_route_table_b" {
+  vpc_id = aws_vpc.infrastructure_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway_b.id
+  }
+
+  tags = {
+    Name    = "Private Route Table B"
+    Account = "Route Table in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Route Table in Region: ${data.aws_region.current.description}"
+  }
+}
+
+# Create Elastic IP for NAT Gateway in Public Subnet A
+resource "aws_eip" "nat_eip_a" {
+  vpc = true
+  tags = {
+    Name    = "NAT EIP A"
+    Account = "EIP in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "EIP in Region: ${data.aws_region.current.description}"
+  }
+}
+
+# Create Elastic IP for NAT Gateway in Public Subnet B
+resource "aws_eip" "nat_eip_b" {
+  vpc = true
+  tags = {
+    Name    = "NAT EIP B"
+    Account = "EIP in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "EIP in Region: ${data.aws_region.current.description}"
+  }
+}
+
+# Create NAT Gateway for Public Route Table A
+resource "aws_nat_gateway" "nat_gateway_a" {
+  allocation_id = aws_eip.nat_eip_a.id
+  subnet_id     = aws_subnet.public_subnet_a.id
+  tags = {
+    Name    = "NAT Gateway A"
+    Account = "NAT Gateway in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "NAT Gateway in Region: ${data.aws_region.current.description}"
+  }
+}
+
+# Create NAT Gateway in Public Subnet B
+resource "aws_nat_gateway" "nat_gateway_b" {
+  allocation_id = aws_eip.nat_eip_b.id
+  subnet_id     = aws_subnet.public_subnet_b.id
+  tags = {
+    Name    = "NAT Gateway B"
+    Account = "NAT Gateway in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "NAT Gateway in Region: ${data.aws_region.current.description}"
+  }
+}
+
+# Associate Public Route Table with Public Subnet A
+resource "aws_route_table_association" "public_route_table_association_a" {
+  subnet_id      = aws_subnet.public_subnet_a.id
+  route_table_id = aws_route_table.public_route_table.id
+}
+
+# Associate Public Route Table with Public Subnet B
+resource "aws_route_table_association" "public_route_table_association_b" {
+  subnet_id      = aws_subnet.public_subnet_b.id
+  route_table_id = aws_route_table.public_route_table.id
+}
+
+# Associate Private Route Table A with Private Subnet A
+resource "aws_route_table_association" "private_route_table_association_a" {
+  subnet_id      = aws_subnet.private_subnet_a.id
+  route_table_id = aws_route_table.private_route_table_a.id
+}
+
+# Associate Private Route Table B with Private Subnet B
+resource "aws_route_table_association" "private_route_table_association_b" {
+  subnet_id      = aws_subnet.private_subnet_b.id
+  route_table_id = aws_route_table.private_route_table_b.id
+}
+
+# Associate DB Route Table with DB Subnet A
+resource "aws_route_table_association" "db_route_table_association_a" {
   subnet_id      = aws_subnet.db_subnet_a.id
   route_table_id = aws_route_table.db_route_table.id
 }
 
-# Associate DB Subnet B with DB Route Table
-resource "aws_route_table_association" "db_subnet_b_association" {
+# Associate DB Route Table with DB Subnet B
+resource "aws_route_table_association" "db_route_table_association_b" {
   subnet_id      = aws_subnet.db_subnet_b.id
   route_table_id = aws_route_table.db_route_table.id
 }
 
-
-# Create Security Group for VPC 443, 80, 22 in my vpc
-resource "aws_security_group" "vpc_sg" {
-  name        = "VPC Security Group"
-  description = "Allow HTTP, HTTPS and SSH inbound traffic"
-  vpc_id      = aws_vpc.Infrastructure_vpc.id
-  dynamic "ingress" {
-    for_each = ["80", "443", "22"]
-    content {
-      from_port   = ingress.value
-      to_port     = ingress.value
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      }
+# Create Security Group for Bastion Host with SSH Inbound Rule and All Outbound Rule
+resource "aws_security_group" "security_group" {
+  vpc_id = aws_vpc.infrastructure_vpc.id
+  tags = {
+    Name    = "Bastion Security Group"
+    Account = "Security Group in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Security Group in Region: ${data.aws_region.current.description}"
   }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Name    = "VPC Security Group"
-    Account = "Security Group in Account: ${data.aws_caller_identity.current.account_id}"
-  }
+
 }
 
-# Launch Template for Bastion Host
-resource "aws_launch_template" "bastion_host" {
+# Create Launch Template for Bastion Host
+resource "aws_launch_template" "bastion_launch_template" {
+  name_prefix   = "Bastion-host"
   image_id      = data.aws_ami.latest_ubuntu.id
   instance_type = "t2.micro"
   key_name      = "ServersKey"
-  vpc_security_group_ids = [aws_security_group.vpc_sg.id]
 
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name    = "Bastion Host"
-      Owner   = "Valerii Vasianovych"
-      Project = "Infrastructure_VPC"
-    }
+  network_interfaces {
+    security_groups = [aws_security_group.security_group.id]  # Associate security group here
   }
-}
-
-# Create Target Group for Bastion Host 
-resource "aws_lb_target_group" "bastion_tg" {
-  port     = 22
-  protocol = "TCP"
-  vpc_id   = aws_vpc.Infrastructure_vpc.id
+  
   tags = {
-    Name    = "Bastion Target Group"
-    Account = "Target Group in Account: ${data.aws_caller_identity.current.account_id}"
+    Name    = "Bastion Host"
+    Account = "Bastion Host in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Bastion Host in Region: ${data.aws_region.current.description}"
   }
 }
 
-# Create ASG for Bastion Host
-resource "aws_autoscaling_group" "bastion_asg" {
+# Create Autoscaling Group for Bastion Host
+resource "aws_autoscaling_group" "bastion_autoscaling_group" {
   desired_capacity     = 1
   max_size             = 1
   min_size             = 1
   launch_template {
-    id      = aws_launch_template.bastion_host.id
+    id      = aws_launch_template.bastion_launch_template.id
     version = "$Latest"
   }
-  target_group_arns   = [aws_lb_target_group.bastion_tg.arn]
+
   vpc_zone_identifier = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
-  tag {
-    key                 = "Name"
-    value               = "Bastion Host"
-    propagate_at_launch = true
-  }
 }
 
 # Create Instance in Private Subnet A
 resource "aws_instance" "private_instance_a" {
-  ami                    = data.aws_ami.latest_ubuntu.id
-  instance_type          = "t2.micro"
-  key_name               = "ServersKey"
-  subnet_id              = aws_subnet.private_subnet_a.id
-  vpc_security_group_ids = [aws_security_group.vpc_sg.id]
+  ami           = data.aws_ami.latest_ubuntu.id
+  instance_type = "t2.micro"
+  key_name      = "ServersKey"
+  subnet_id     = aws_subnet.private_subnet_a.id
+  security_groups = [aws_security_group.security_group.id]
   tags = {
     Name    = "Private Instance A"
-    Owner   = "Valerii Vasianovych"
-    Project = "Infrastructure_VPC"
+    Account = "Instance in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Instance in Region: ${data.aws_region.current.description}"
   }
 }
 
 # Create Instance in DB Subnet A
 resource "aws_instance" "db_instance_a" {
-  ami                    = data.aws_ami.latest_ubuntu.id
-  instance_type          = "t2.micro"
-  key_name               = "ServersKey"
-  subnet_id              = aws_subnet.db_subnet_a.id
-  vpc_security_group_ids = [aws_security_group.vpc_sg.id]
+  ami           = data.aws_ami.latest_ubuntu.id
+  instance_type = "t2.micro"
+  key_name      = "ServersKey"
+  subnet_id     = aws_subnet.db_subnet_a.id
+  security_groups = [aws_security_group.security_group.id]
   tags = {
     Name    = "DB Instance A"
-    Owner   = "Valerii Vasianovych"
-    Project = "Infrastructure_VPC"
+    Account = "Instance in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Instance in Region: ${data.aws_region.current.description}"
   }
 }
 
-output "Region" {
-  value = data.aws_region.current.name
+# Create Instance in Private Subnet B
+resource "aws_instance" "private_instance_b" {
+  ami           = data.aws_ami.latest_ubuntu.id
+  instance_type = "t2.micro"
+  key_name      = "ServersKey"
+  subnet_id     = aws_subnet.private_subnet_b.id
+  security_groups = [aws_security_group.security_group.id]
+  tags = {
+    Name    = "Private Instance B"
+    Account = "Instance in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Instance in Region: ${data.aws_region.current.description}"
+  }
 }
 
-output "RegionDescription" {
-  value = data.aws_region.current.description
-}
-
-output "Account" {
-  value = data.aws_caller_identity.current.account_id
-}
-
-output "VPC_ID" {
-  value = aws_vpc.Infrastructure_vpc.id
-}
-
-output "ElaticIP_A" {
-  value = aws_eip.nat_eip_a.public_ip
-}
-
-output "ElaticIP_B" {
-  value = aws_eip.nat_eip_b.public_ip
+# Create Instance in DB Subnet B
+resource "aws_instance" "db_instance_b" {
+  ami           = data.aws_ami.latest_ubuntu.id
+  instance_type = "t2.micro"
+  key_name      = "ServersKey"
+  subnet_id     = aws_subnet.db_subnet_b.id
+  security_groups = [aws_security_group.security_group.id]
+  tags = {
+    Name    = "DB Instance B"
+    Account = "Instance in Account: ${data.aws_caller_identity.current.account_id}"
+    Region  = "Instance in Region: ${data.aws_region.current.description}"
+  }
 }
