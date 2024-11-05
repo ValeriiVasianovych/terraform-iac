@@ -1,11 +1,12 @@
 terraform {
-  backend "s3" {
-    bucket         = "terrafrom-tfstate-file-s3-bucket"
+    backend "s3" {
+    bucket           = "terrafrom-tfstate-file-s3-bucket"
     # dynamodb_table = "terrafrom-tfstate-dynamodb"
-    encrypt        = true
-    key            = "aws/tfstates/dynamic-files/terraform.tfstate"
-    region         = "us-east-1"
+    encrypt          = true
+    key              = "aws/tfstates/ec2-create/terraform.tfstate"
+    region           = "us-east-1"
   }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"

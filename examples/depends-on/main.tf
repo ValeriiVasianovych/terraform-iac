@@ -1,4 +1,11 @@
 terraform {
+  backend "s3" {
+    bucket         = "terrafrom-tfstate-file-s3-bucket"
+    # dynamodb_table = "terrafrom-tfstate-dynamodb"
+    encrypt        = true
+    key            = "aws/tfstates/depends-on/terraform.tfstate"
+    region         = "us-east-1"
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -12,20 +19,3 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
-
-
-resource "aws_s3_bucket" "bucket-1" {
-  bucket = "my-tf-bucket-1-s3"
-  }
-
-resource "aws_s3_bucket" "bucket-2" {
-  bucket = "my-tf-bucket-2-s3"
-  depends_on = [ aws_s3_bucket.bucket-1 ]
-
-}
-
-resource "aws_s3_bucket" "bucket-3" {
-  bucket = "my-tf-bucket-3-s3"
-  depends_on = [ aws_s3_bucket.bucket-1, aws_s3_bucket.bucket-2 ]
-}
-  
