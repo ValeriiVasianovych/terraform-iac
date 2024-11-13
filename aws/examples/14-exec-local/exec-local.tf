@@ -29,10 +29,9 @@ resource "null_resource" "com4" {
 resource "aws_instance" "ubuntu" {
     ami           = "0866a3c8686eaeeba"
     instance_type = "t2-micro"
-    provisioner "local-exec" {
+    provisioner "local-exec" { # Inside EC2 instance. If I create an instance, I can run this command inside the instance. 
       command = "ping -c 5 www.google.com"
     }
-
 
     provisioner "local-exec" {
       command = "hello "
