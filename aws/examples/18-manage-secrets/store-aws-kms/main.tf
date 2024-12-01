@@ -3,7 +3,7 @@ terraform {
     bucket = "terrafrom-tfstate-file-s3-bucket"
     # dynamodb_table = "terraform-tfstate-dynamodb"
     encrypt = true
-    key     = "aws/tfstates/env_keys/env_gpg/terraform.tfstate"
+    key     = "aws/tfstates/env_keys/kms/terraform.tfstate"
     region  = "us-east-1"
   }
   required_providers {

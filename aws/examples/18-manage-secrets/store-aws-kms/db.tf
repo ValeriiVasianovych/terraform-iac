@@ -1,3 +1,7 @@
+locals {
+  db_creds = yamldecode(data.aws_kms_secrets.creds.plaintext["db"])
+}
+
 resource "aws_db_instance" "mysql" {
   identifier           = "mysql-db"         # It is the name of the database instance.
   publicly_accessible  = true               # It means that the database is accessible from the internet.
@@ -10,6 +14,6 @@ resource "aws_db_instance" "mysql" {
   skip_final_snapshot  = true               # It means that when the instance is deleted, it will not take the final snapshot.
   apply_immediately    = true               # It means that the changes (for example, changing the engine version) will be applied immediately.
 
-  username             = var.db_username
-  password             = var.db_password
+  username             = local.db_creds.username
+  password             = local.db_creds.password
 }
