@@ -1,0 +1,5 @@
+---
+- name: Run Nginx
+  systemd:
+    state: started
+    name: nginx
