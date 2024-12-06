@@ -1,4 +1,0 @@
----
-- include_tasks: 01-start-nginx.yaml
-- include_tasks: 02-deploy-page.yaml
-- include_tasks: 03-start-nginx.yaml

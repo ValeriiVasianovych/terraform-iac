@@ -1,15 +1,6 @@
 ---
-- name: Update package cache
-  become: true
-  apt:
-    update_cache: yes
+# tasks file for deploy_nginx
 
-- name: Ensure Nginx is at the latest version
-  apt:
-    name: nginx
-    state: latest
-
-- name: Make sure Nginx is running
-  systemd:
-    state: started
-    name: nginx
+- include_tasks: 01_update_packages.yml
+- include_tasks: 02_nginx_install.yml
+- include_tasks: 03_copy_indexj2.yml

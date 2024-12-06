@@ -1,8 +1,0 @@
----
-- name: Deploy index.j2
-  template:
-     src: 'index.j2'
-     dest: '{{ dest }}/index.html'
-     mode: '0555'
-  notify:
-     - Restart Nginx Service
