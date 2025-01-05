@@ -1,5 +1,0 @@
-{
-    "yaml.schemas": {
-        "https://json.schemastore.org/yamllint.json": "file:///Users/valeriivasianovych/code/terraform-iac-aws-azure/aws/projects/tf-ansible-nginx/nginx-playbook.yaml"
-    }
-}
