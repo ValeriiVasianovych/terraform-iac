@@ -29,5 +29,5 @@ variable "common_tags" {
 variable "count_instance" {
     type = number
     description = "The number of instances to launch"
-    default = 2
+    default = 1
 }

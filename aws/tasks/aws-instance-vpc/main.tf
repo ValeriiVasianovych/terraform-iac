@@ -23,11 +23,11 @@ module "network" {
   common_tags        = var.common_tags
 }
 
-module "ec2" {
-  source            = "./modules/ec2"
-  instance_ami      = data.aws_ami.latest_ubuntu.id
-  instance_type     = var.instance_type
-  security_group_id = module.network.security_group_id
-  subnet_id         = module.network.public_subnet_id
-  common_tags       = var.common_tags
-}
+# module "ec2" {
+#   source            = "./modules/ec2"
+#   instance_ami      = data.aws_ami.latest_ubuntu.id
+#   instance_type     = var.instance_type
+#   security_group_id = module.network.security_group_id
+#   subnet_id         = module.network.public_subnet_id
+#   common_tags       = var.common_tags
+# }
