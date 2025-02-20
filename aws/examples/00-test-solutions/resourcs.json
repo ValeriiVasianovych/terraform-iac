@@ -1,0 +1,274 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.10.5",
+  "values": {
+    "outputs": {
+      "file_content": {
+        "sensitive": false,
+        "value": "Hello from Terraform!\nThis is example of returning a string from Terraform using outputs.",
+        "type": "string"
+      },
+      "greater_than": { "sensitive": false, "value": true, "type": "bool" },
+      "multiply": { "sensitive": false, "value": 14, "type": "number" }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "data.aws_ami.latest_ubuntu",
+          "mode": "data",
+          "type": "aws_ami",
+          "name": "latest_ubuntu",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "architecture": "x86_64",
+            "arn": "arn:aws:ec2:us-east-1::image/ami-0609a4e88e9e5a526",
+            "block_device_mappings": [
+              {
+                "device_name": "/dev/sda1",
+                "ebs": {
+                  "delete_on_termination": "true",
+                  "encrypted": "false",
+                  "iops": "0",
+                  "snapshot_id": "snap-0f50534b4656bd1c1",
+                  "throughput": "0",
+                  "volume_size": "8",
+                  "volume_type": "gp3"
+                },
+                "no_device": "",
+                "virtual_name": ""
+              },
+              {
+                "device_name": "/dev/sdb",
+                "ebs": {},
+                "no_device": "",
+                "virtual_name": "ephemeral0"
+              },
+              {
+                "device_name": "/dev/sdc",
+                "ebs": {},
+                "no_device": "",
+                "virtual_name": "ephemeral1"
+              }
+            ],
+            "boot_mode": "uefi-preferred",
+            "creation_date": "2025-02-14T09:11:37.000Z",
+            "deprecation_time": "2027-02-14T09:11:37.000Z",
+            "description": "Canonical, Ubuntu, 24.04, amd64 noble image",
+            "ena_support": true,
+            "executable_users": null,
+            "filter": [
+              {
+                "name": "name",
+                "values": [
+                  "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"
+                ]
+              }
+            ],
+            "hypervisor": "xen",
+            "id": "ami-0609a4e88e9e5a526",
+            "image_id": "ami-0609a4e88e9e5a526",
+            "image_location": "amazon/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250214",
+            "image_owner_alias": "amazon",
+            "image_type": "machine",
+            "imds_support": "v2.0",
+            "include_deprecated": false,
+            "kernel_id": "",
+            "most_recent": true,
+            "name": "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250214",
+            "name_regex": null,
+            "owner_id": "099720109477",
+            "owners": ["099720109477"],
+            "platform": "",
+            "platform_details": "Linux/UNIX",
+            "product_codes": [],
+            "public": true,
+            "ramdisk_id": "",
+            "root_device_name": "/dev/sda1",
+            "root_device_type": "ebs",
+            "root_snapshot_id": "snap-0f50534b4656bd1c1",
+            "sriov_net_support": "simple",
+            "state": "available",
+            "state_reason": { "code": "UNSET", "message": "UNSET" },
+            "tags": {},
+            "timeouts": null,
+            "tpm_support": "",
+            "uefi_data": null,
+            "usage_operation": "RunInstances",
+            "virtualization_type": "hvm"
+          },
+          "sensitive_values": {
+            "block_device_mappings": [
+              { "ebs": {} },
+              { "ebs": {} },
+              { "ebs": {} }
+            ],
+            "filter": [{ "values": [false] }],
+            "owners": [false],
+            "product_codes": [],
+            "state_reason": {},
+            "tags": {}
+          }
+        },
+        {
+          "address": "aws_iam_user.test_user",
+          "mode": "managed",
+          "type": "aws_iam_user",
+          "name": "test_user",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "arn": "arn:aws:iam::312211201134:user/test-user",
+            "force_destroy": false,
+            "id": "test-user",
+            "name": "test-user",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": null,
+            "tags_all": {},
+            "unique_id": "AIDAURMJ43RXIW26RJMTD"
+          },
+          "sensitive_values": { "tags_all": {} }
+        },
+        {
+          "address": "aws_s3_bucket.import-example",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "import-example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "acceleration_status": "",
+            "acl": null,
+            "arn": "arn:aws:s3:::rds-import-s3-bucket",
+            "bucket": "rds-import-s3-bucket",
+            "bucket_domain_name": "rds-import-s3-bucket.s3.amazonaws.com",
+            "bucket_prefix": "",
+            "bucket_regional_domain_name": "rds-import-s3-bucket.s3.us-east-1.amazonaws.com",
+            "cors_rule": [],
+            "force_destroy": false,
+            "grant": [
+              {
+                "id": "a5ef365d0dfd2cf7c2dfe359f78957ab5c452352fcc5e65e27193c22701c28d0",
+                "permissions": ["FULL_CONTROL"],
+                "type": "CanonicalUser",
+                "uri": ""
+              }
+            ],
+            "hosted_zone_id": "Z3AQBSTGFYJSTF",
+            "id": "rds-import-s3-bucket",
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "object_lock_enabled": false,
+            "policy": "",
+            "region": "us-east-1",
+            "replication_configuration": [],
+            "request_payer": "BucketOwner",
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      { "kms_master_key_id": "", "sse_algorithm": "AES256" }
+                    ],
+                    "bucket_key_enabled": false
+                  }
+                ]
+              }
+            ],
+            "tags": null,
+            "tags_all": {},
+            "timeouts": null,
+            "versioning": [{ "enabled": false, "mfa_delete": false }],
+            "website": [],
+            "website_domain": null,
+            "website_endpoint": null
+          },
+          "sensitive_values": {
+            "cors_rule": [],
+            "grant": [{ "permissions": [false] }],
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [
+              { "rule": [{ "apply_server_side_encryption_by_default": [{}] }] }
+            ],
+            "tags_all": {},
+            "versioning": [{}],
+            "website": []
+          }
+        },
+        {
+          "address": "aws_security_group.example_sg",
+          "mode": "managed",
+          "type": "aws_security_group",
+          "name": "example_sg",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "arn": "arn:aws:ec2:us-east-1:312211201134:security-group/sg-03a0fbaa9bb6d7855",
+            "description": "An example security group for Terraform",
+            "egress": [],
+            "id": "sg-03a0fbaa9bb6d7855",
+            "ingress": [
+              {
+                "cidr_blocks": ["0.0.0.0/0"],
+                "description": "",
+                "from_port": 22,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 22
+              },
+              {
+                "cidr_blocks": ["0.0.0.0/0"],
+                "description": "",
+                "from_port": 80,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 80
+              }
+            ],
+            "name": "example_sg",
+            "name_prefix": "",
+            "owner_id": "312211201134",
+            "revoke_rules_on_delete": false,
+            "tags": { "Name": "example_sg", "Owner": "Valerii Vasianovych" },
+            "tags_all": {
+              "Name": "example_sg",
+              "Owner": "Valerii Vasianovych"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0f47deecc163757a6"
+          },
+          "sensitive_values": {
+            "egress": [],
+            "ingress": [
+              {
+                "cidr_blocks": [false],
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "security_groups": []
+              },
+              {
+                "cidr_blocks": [false],
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "security_groups": []
+              }
+            ],
+            "tags": {},
+            "tags_all": {}
+          }
+        }
+      ]
+    }
+  }
+}
