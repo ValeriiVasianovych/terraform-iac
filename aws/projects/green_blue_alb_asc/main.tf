@@ -94,7 +94,7 @@ resource "aws_autoscaling_group" "web" {
     content {
       key                 = tag.key
       value               = tag.value
-      propagate_at_launch = true
+      propagate_at_launch = true # This value is used for the lifecycle of the resource
     }
   }
   lifecycle {
@@ -107,7 +107,7 @@ resource "aws_lb" "web" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.web.id]
   subnets            = ["${aws_default_subnet.default-az1.id}", "${aws_default_subnet.default-az2.id}"]
-}
+} 
 
 resource "aws_lb_target_group" "web" {
   name                 = "WebServer-Highly-Available-TG"
