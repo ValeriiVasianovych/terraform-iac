@@ -3,3 +3,4 @@
 !.terraform.lock.hcl
 *.env
 *id_rsa
+.DS_Store
