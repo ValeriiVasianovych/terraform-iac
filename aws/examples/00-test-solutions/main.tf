@@ -6,6 +6,7 @@ terraform {
   #     name = "cli-driven-workspace" 
   #   }
   # }
+
   backend "s3" {
     bucket = "terrafrom-tfstate-file-s3-bucket"
     # dynamodb_table = "terraform-tfstate-dynamodb"
@@ -15,6 +16,8 @@ terraform {
     use_lockfile = true
   }
 }
+
+###########################################################################
 
 # Datasources
 data "aws_ami" "latest_ubuntu" {
@@ -26,86 +29,78 @@ data "aws_ami" "latest_ubuntu" {
   }
 }
 
-# Variables
-variable "region" {
-  type        = string
-  description = "The region in which to launch the EC2 instance"
-  default     = "us-east-1"
-}
-
-variable "environment" {
-  type        = string
-  description = "The environment in which to launch the EC2 instance"
-  # default     = "dev"
-}
-
-variable "instance_types" {
-  type        = map(string)
-  description = "The types of instances to launch"
-  default = {
-    dev     = "t2.micro"
-    staging = "t2.medium"
-    prod    = "t2.large"
-  }
-}
-
-locals {
-  file_content = file("${path.module}/hello-tf.txt") # Path module is the directory where the current module is located
-}
-
-variable "common_tags" {
-  type        = map(string)
-  description = "Common tags to apply to all resources"
-  default = {
-    Owner    = "Valerii Vasianovych"
-    Provider = "AWS-Terraform"
-  }
-}
+###########################################################################
 
 # Provider
 provider "aws" {
   region = var.region
 }
 
+###########################################################################
+
+# module "aws_vpc" {
+#     // source = "git@github.com:valeriiVasianovych/terraform-aws-vpc.git//modules/aws_vpc" Use for remote module
+#     source = "./modules/aws_vpc"
+#     region = "eu-central-1"
+#     env = "dev"
+#     vpc_cidr = "192.168.0.0/16"
+#     public_subnet_cidrs = [
+#         "192.168.10.0/24"
+#         # "192.168.11.0/24",
+#         # "192.168.12.0/24"
+#     ]
+#     private_subnet_cidrs = [
+#         "192.168.20.0/24"
+#         # "192.168.21.0/24",
+#         # "192.168.22.0/24"
+#     ]
+#     common_tags = {
+#         Owner : "Peter Parker"
+#         Project : "Terraform AWS VPC"
+#     }
+# }
+
+###########################################################################
+
 # Resources
-resource "aws_instance" "example_ec2" {
-  ami           = data.aws_ami.latest_ubuntu.id
-  instance_type = lookup(var.instance_types, var.environment, "t3.micro")
-  # instance_type = (terraform.workspace == "dev" ? "t3.micro" : "t2.medium")
-  # availability_zone      = module.vpc.azs[0]
-  key_name               = "ServersKey"
-  # vpc_security_group_ids = [aws_security_group.tf-sg.id]
+# resource "aws_instance" "example_ec2" {
+#   ami           = data.aws_ami.latest_ubuntu.id
+#   instance_type = lookup(var.instance_types, var.environment, "t3.micro")
+#   # instance_type = (terraform.workspace == "dev" ? "t3.micro" : "t2.medium")
+#   # availability_zone      = module.vpc.azs[0]
+#   key_name               = "ServersKey"
+#   # vpc_security_group_ids = [aws_security_group.tf-sg.id]
 
-  tags = merge(var.common_tags, {
-    Name = "ec2-instance"
-    Environment = "${var.environment}"
-  })
+#   tags = merge(var.common_tags, {
+#     Name = "ec2-instance"
+#     Environment = "${var.environment}"
+#   })
 
-  provisioner "file" {
-    source      = "${path.module}/data.json"
-    destination = "/tmp/data.json"
-  }
+#   provisioner "file" {
+#     source      = "${path.module}/data.json"
+#     destination = "/tmp/data.json"
+#   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "cd /tmp",
-      "ls -al",
-      "cat data.json",
-      "ps -ef"
-    ]
-  }
+#   provisioner "remote-exec" {
+#     inline = [
+#       "cd /tmp",
+#       "ls -al",
+#       "cat data.json",
+#       "ps -ef"
+#     ]
+#   }
 
-  provisioner "local-exec" {
-    command = "echo 'Instance created!'"
-  }
+#   provisioner "local-exec" {
+#     command = "echo 'Instance created!'"
+#   }
 
-  connection {
-    type        = "ssh"
-    user        = "ubuntu"
-    private_key = file("~/.ssh/ServersKey.pem")
-    host        = self.public_ip
-  }
-}
+#   connection {
+#     type        = "ssh"
+#     user        = "ubuntu"
+#     private_key = file("~/.ssh/ServersKey.pem")
+#     host        = self.public_ip
+#   }
+# }
 
 # resource "aws_s3_bucket" "tf-s3-bucket" {
 #   bucket = "terraform-s3-bucket-vasianovych-2"
@@ -147,39 +142,16 @@ resource "aws_instance" "example_ec2" {
 #   }
 # }
 
-# Outputs
-output "created_instance_type" {
-  value = aws_instance.example_ec2.instance_type
+resource "aws_security_group" "web" {
+  name = "web-sg"
+
+  dynamic "ingress" {
+    for_each = ["80", "443"]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
 }
-
-output "created_instance_az" {
-  value = aws_instance.example_ec2.availability_zone
-}
-
-output "file_content" {
-  value = local.file_content
-}
-
-output "multiply" {
-  value = 2 * 7
-}
-
-output "greater_than" {
-  value = 5 > 4
-}
-
-# resource "aws_security_group" "web" {
-#   name = "web-sg"
-
-#   dynamic "ingress" {
-#     for_each = ["80", "443"]
-#     content {
-#       from_port   = ingress.value
-#       to_port     = ingress.value
-#       protocol    = "tcp"
-#       cidr_blocks = ["0.0.0.0/0"]
-#       description = "Allow traffic on port ${ingress.value} for ${aws_security_group.web.name}"
-#     }
-#   }
-# }
-

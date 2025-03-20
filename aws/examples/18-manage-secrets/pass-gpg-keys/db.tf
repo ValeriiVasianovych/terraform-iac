@@ -10,6 +10,6 @@ resource "aws_db_instance" "mysql" {
   skip_final_snapshot  = true               # It means that when the instance is deleted, it will not take the final snapshot.
   apply_immediately    = true               # It means that the changes (for example, changing the engine version) will be applied immediately.
 
-  username             = var.db_username
-  password             = var.db_password
+  username = var.db_username
+  password = var.db_password
 }

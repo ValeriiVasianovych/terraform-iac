@@ -7,11 +7,11 @@ output "account_id" {
 }
 
 output "db_username" {
-  value = var.db_username
-  sensitive = false
+  value     = var.db_username
+  sensitive = true
 }
 
 output "db_password" {
   value     = var.db_password
-  sensitive = false
+  sensitive = true
 }
