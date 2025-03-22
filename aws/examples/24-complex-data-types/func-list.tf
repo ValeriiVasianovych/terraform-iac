@@ -29,5 +29,12 @@ output "list_example_combined" {
 
 output "list_of_lists_example_flattened" {
   value = flatten(var.list_of_lists_example) # flatten the list of lists
+}
 
+output "list_example_length" {
+  value = length(var.list_example) # length of the list
+}
+
+output "list_example_toset" {
+  value = toset(var.list_example) # convert the list to set
 }

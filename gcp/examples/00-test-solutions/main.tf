@@ -1,32 +1,40 @@
 provider "google" {
   credentials = file("terraform-gcp-creds.json")
-  project = var.gcloud_project_id
-  region = var.region
-  zone = "${var.region}-b"
-}   
+  project     = var.gcloud_project_id
+  region      = var.region
+}
 
 resource "google_compute_address" "static_ip" {
   name = "gcp-static-ip"
 }
 
 resource "google_compute_instance" "server" {
-    name         = "gcp-server"
-    machine_type = "e2-micro"
-    tags         = ["web-server"]
-    
-    boot_disk {
-        initialize_params {
-            image = "debian-cloud/debian-12"
-        }
-    }
-    network_interface {
-        network = "default"
-        access_config {
-            nat_ip = google_compute_address.static_ip.address
-        }
-    }
+  name         = "gcp-server"
+  machine_type = "e2-micro"
+  zone         = format("%s-b", var.region)
+  tags         = ["web-server"]
 
-    metadata_startup_script = file("startup-script.sh")
+  labels = merge(
+    var.common_tags,
+    {
+      name = "gcp-server"
+    }
+  )
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+    }
+  }
+
+  network_interface {
+    network = "default"
+    access_config {
+      nat_ip = google_compute_address.static_ip.address
+    }
+  }
+
+  metadata_startup_script = file("startup-script.sh")
 }
 
 resource "google_compute_firewall" "allow_http_ssh_https" {
@@ -39,5 +47,6 @@ resource "google_compute_firewall" "allow_http_ssh_https" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["web-server"]
+  target_tags   = google_compute_instance.server.tags
 }
+

@@ -1,3 +1,6 @@
+# All of complex data types in terraform are immutable.
+# It means that you cannot change them. You can only create new values based on the existing ones.
+
 # List
 # 1. Contain dublicates
 # 2. Only one type of data
@@ -6,7 +9,7 @@
 # 5. List in terraform can be changed using: length(), concat(), slice(), join(), distinct(), reverse(), sort(), flatten()
 variable "list_example" {
   type    = list(string)
-  default = ["cat", "dog", "bird", "cat", "cat"]
+  default = ["cat", "dog", "bird", "cat", "cat", "Cat"]
 }
 
 variable "list_of_lists_example" {
@@ -49,7 +52,7 @@ output "map_example_year" {
 # 5. Set in terraform can be changed using: length(), contains(), union(), intersection(), difference(), isdisjoint(), issubset(), issuperset(), tolist() etc.
 variable "set_example" {
   type    = set(string)
-  default = ["cat", "dog", "bird", "cat", "cat"]
+  default = ["cat", "dog", "bird", "cat", "Cat"] # Cat and cat are different values
 }
 
 output "set_example" {
