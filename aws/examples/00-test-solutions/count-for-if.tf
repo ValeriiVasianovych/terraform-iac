@@ -48,7 +48,7 @@ output "show_specific_users" {
     for i in aws_iam_user.users :
     i.name if length(i.name) == 4
   ]
-}
+} 
 
 ##############################################################
 

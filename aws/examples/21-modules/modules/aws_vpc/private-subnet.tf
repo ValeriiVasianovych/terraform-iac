@@ -1,20 +1,20 @@
-# resource "aws_eip" "nat" {
-#   count = length(var.private_subnet_cidrs) # Number of EIPs for NAT gateways based on the number of private subnets
-#   tags = merge(var.common_tags, {
-#     Name   = "${var.env}-nat-eip-${count.index + 1}"
-#     Region = "Region: ${var.region}"
-#   })
-# }
+resource "aws_eip" "nat" {
+  count = length(var.private_subnet_cidrs) # Number of EIPs for NAT gateways based on the number of private subnets
+  tags = merge(var.common_tags, {
+    Name   = "${var.env}-nat-eip-${count.index + 1}"
+    Region = "Region: ${var.region}"
+  })
+}
 
-# resource "aws_nat_gateway" "nat" {
-#   count         = length(var.private_subnet_cidrs) # Number of NAT gateways based on the number of private subnets
-#   allocation_id = aws_eip.nat[count.index].id # Each NAT gateway is associated with a separate EIP
-#   subnet_id     = element(aws_subnet.public_subnets[*].id, count.index) # value of the public subnet ID, used to associate the NAT gateway with each private subnet
-#   tags = merge(var.common_tags, {
-#     Name   = "${var.env}-nat-gw-${count.index + 1}"
-#     Region = "Region: ${var.region}"
-#   })
-# }
+resource "aws_nat_gateway" "nat" {
+  count         = length(var.private_subnet_cidrs) # Number of NAT gateways based on the number of private subnets
+  allocation_id = aws_eip.nat[count.index].id # Each NAT gateway is associated with a separate EIP
+  subnet_id     = element(aws_subnet.public_subnets[*].id, count.index) # value of the public subnet ID, used to associate the NAT gateway with each private subnet
+  tags = merge(var.common_tags, {
+    Name   = "${var.env}-nat-gw-${count.index + 1}"
+    Region = "Region: ${var.region}"
+  })
+}
 
 resource "aws_subnet" "private_subnets" {
   count             = length(var.private_subnet_cidrs) # Number of private subnets based on the number of CIDRs provided
