@@ -38,3 +38,21 @@ variable "env" {
   type        = string
   default     = "test"
 }
+
+variable "public_sg" {
+  description = "The ports for the public security group : SSH, HTTP, HTTPS, OpenVPN, OpenVPN Access Server"
+  type        = list(number)
+  default     = [22, 443, 1194, 943]
+}
+
+variable "private_sg" {
+  description = "The ports for the private security group: SSH, HTTP, HTTPS, FlaskApp"
+  type        = list(string)
+  default     = ["22", "80", "443", "5000"]
+}
+
+variable "db_private_sg" {
+  description = "The ports for the database security group: mySQL"
+  type        = list(string)
+  default     = ["22", "3306"]
+}
