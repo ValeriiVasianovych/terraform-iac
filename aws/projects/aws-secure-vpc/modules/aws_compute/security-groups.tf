@@ -1,7 +1,9 @@
 # SG for bastion host 80 443 and 22
 
-resource "aws_security_group" "public-sg" {
-  vpc_id = aws_vpc.main.id
+resource "aws_security_group" "public_sg" {
+  name = "${var.env}-security-group-public"
+  vpc_id      = var.vpc_id
+  description = "Allows traffic for instances in public subnets"
   dynamic "ingress" {
     for_each = var.public_sg
     content {
@@ -22,8 +24,10 @@ resource "aws_security_group" "public-sg" {
   }
 }
 
-resource "aws_security_group" "private-sg" {
-  vpc_id = aws_vpc.main.id
+resource "aws_security_group" "private_sg" {
+  name = "${var.env}-security-group-private"
+  vpc_id      = var.vpc_id
+  description = "Allows traffic for instances in public subnets"
   dynamic "ingress" {
     for_each = var.private_sg
     content {
@@ -44,9 +48,10 @@ resource "aws_security_group" "private-sg" {
   }
 }
 
-
-resource "aws_security_group" "sg" {
-  description = "Allows HTTP SSH"
+resource "aws_security_group" "db_sg" {
+  name = "${var.env}-security-group-db"
+  vpc_id      = var.vpc_id
+  description = "Allows traffic for instances in public subnets"
   dynamic "ingress" {
     for_each = var.db_private_sg
     content {

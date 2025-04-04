@@ -1,16 +1,3 @@
-provider "aws" {
-  region = var.region
-
-  default_tags {
-    tags = {
-      Owner       = "Valerii Vasianovych with ID: ${var.account_id}"
-      Project     = "Cybersecurity Project in ${var.region} region. Project: AWS Cloud and Terraform IaC"
-      Environment = "${var.env}"
-      Region      = "Region: ${var.region}"
-    }
-  }
-}
-
 data "aws_availability_zones" "available" {}
 
 resource "aws_vpc" "main" {

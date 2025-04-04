@@ -26,8 +26,3 @@ resource "aws_route_table_association" "public_routes" {
   route_table_id = aws_route_table.public_subnets.id
   subnet_id      = element(aws_subnet.public_subnets[*].id, count.index)
 }
-
-resource "aws_network_acl" "public_nacl" {
-  vpc_id     = aws_vpc.main.id
-  subnet_ids = aws_subnet.public_subnets[*].id
-}

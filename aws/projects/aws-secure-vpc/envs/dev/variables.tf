@@ -1,8 +1,8 @@
-# variable "region" {
-#   description = "The AWS region"
-#   type        = string
-#   default     = "us-east-1"
-# }
+variable "region" {
+  description = "The AWS region"
+  type        = string
+  default     = "us-east-1"
+}
 
 # variable "vpc_cidr" {
 #   description = "The CIRDR block for the VPC"
@@ -28,8 +28,8 @@
 #   default     = ["10.0.30.0/24", "10.0.31.0/24"]
 # }
 
-# variable "env" {
-#   description = "The environment"
-#   type        = string
-#   default     = "development"
-# }
+variable "env" {
+  description = "The environment"
+  type        = string
+  default     = "development"
+}

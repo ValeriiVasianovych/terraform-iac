@@ -4,3 +4,4 @@
 *.env
 *id_rsa
 .DS_Store
+.terragrunt-cache
