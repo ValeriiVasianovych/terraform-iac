@@ -33,3 +33,19 @@ variable "env" {
   type        = string
   default     = "development"
 }
+
+variable "key_name" {
+  description = "The name of the key pair to be used for SSH access"
+  type        = string
+}
+
+variable "instance_types" {
+  description = "Map of instance types for different components"
+  type        = map(string)
+  default = {
+    bastion          = "t2.micro"
+    public_instance  = "t2.micro"
+    private_instance = "t2.micro"
+    db_instance      = "db.t2.micro"
+  }
+}

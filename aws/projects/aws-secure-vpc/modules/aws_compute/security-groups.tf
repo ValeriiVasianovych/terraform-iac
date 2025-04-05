@@ -1,11 +1,11 @@
 # SG for bastion host 80 443 and 22
 
 resource "aws_security_group" "public_sg" {
-  name = "${var.env}-security-group-public"
+  name        = "${var.env}-security-group-public"
   vpc_id      = var.vpc_id
   description = "Allows traffic for instances in public subnets"
   dynamic "ingress" {
-    for_each = var.public_sg
+    for_each = [for port in var.public_sg : port if port != 1194]
     content {
       from_port   = ingress.value
       to_port     = ingress.value
@@ -13,6 +13,17 @@ resource "aws_security_group" "public_sg" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
+
+  dynamic "ingress" {
+    for_each = [for port in var.public_sg : port if port == 1194]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "udp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+  
   egress {
     from_port   = 0
     to_port     = 0
@@ -25,7 +36,7 @@ resource "aws_security_group" "public_sg" {
 }
 
 resource "aws_security_group" "private_sg" {
-  name = "${var.env}-security-group-private"
+  name        = "${var.env}-security-group-private"
   vpc_id      = var.vpc_id
   description = "Allows traffic for instances in public subnets"
   dynamic "ingress" {
@@ -49,7 +60,7 @@ resource "aws_security_group" "private_sg" {
 }
 
 resource "aws_security_group" "db_sg" {
-  name = "${var.env}-security-group-db"
+  name        = "${var.env}-security-group-db"
   vpc_id      = var.vpc_id
   description = "Allows traffic for instances in public subnets"
   dynamic "ingress" {

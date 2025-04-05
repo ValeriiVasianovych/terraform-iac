@@ -1,31 +1,99 @@
+# Creation of ALB for private instances
+resource "aws_lb" "private_instance_alb" {
+  count              = length(var.private_subnet_ids) > 0 ? 1 : 0
+  name               = "${var.env}-private-instance-alb"
+  internal           = true
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.private_sg.id]
+  subnets            = var.private_subnet_ids
 
+  tags = {
+    Name = "${var.env}-private-instance-alb"
+  }
+}
 
-# resource "aws_lb" "web" {
-#   name               = "WebServer-Highly-Available-LB"
-#   load_balancer_type = "application"
-#   security_groups    = [aws_security_group.web.id]
-#   subnets            = ["${aws_default_subnet.default-az1.id}", "${aws_default_subnet.default-az2.id}"]
-# } 
+resource "aws_lb_target_group" "private_instance_tg" {
+  count       = length(var.private_subnet_ids) > 0 ? 1 : 0
+  name        = "${var.env}-private-instance-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "instance"
 
-# resource "aws_lb_target_group" "web" {
-#   name                 = "WebServer-Highly-Available-TG"
-#   port                 = 80
-#   protocol             = "HTTP"
-#   vpc_id               = aws_default_vpc.default.id
-#   deregistration_delay = 10
-# }
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+  tags = {
+    Name = "${var.env}-private-instance-tg"
+  }
+}
 
-# resource "aws_lb_listener" "http" {
-#   load_balancer_arn = aws_lb.web.arn
-#   port              = "80"
-#   protocol          = "HTTP"
+resource "aws_lb_listener" "private_instance_listener" {
+  count             = length(var.private_subnet_ids) > 0 ? 1 : 0
+  load_balancer_arn = aws_lb.private_instance_alb[0].arn
+  port              = "80"
+  protocol          = "HTTP"
 
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.web.arn
-#   }
-# }
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.private_instance_tg[0].arn
+  }
+}
 
-# output "web_lb_url_name" {
-#   value = aws_lb.web.dns_name
-# }
+# Creation of ASG for private instances
+resource "aws_launch_template" "private_instance_lt" {
+  count         = length(var.private_subnet_ids) > 0 ? 1 : 0
+  image_id      = var.ami
+  instance_type = var.instance_type_private_instance
+  key_name      = var.key_name
+  user_data     = filebase64("${path.module}/scripts/install-nginx.sh")
+  network_interfaces {
+    associate_public_ip_address = false
+    security_groups             = [aws_security_group.private_sg.id]
+  }
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+  tags = {
+    Name = "${var.env}-private-instance-lt"
+  }
+}
+
+resource "aws_autoscaling_group" "private_instance_asg" {
+  count               = length(var.private_subnet_ids) > 0 ? 1 : 0
+  vpc_zone_identifier = var.private_subnet_ids
+  desired_capacity    = length(var.private_subnet_ids)
+  max_size            = length(var.private_subnet_ids)
+  min_size            = 1
+
+  launch_template {
+    id      = aws_launch_template.private_instance_lt[0].id
+    version = "$Latest"
+  }
+
+  target_group_arns = [aws_lb_target_group.private_instance_tg[0].arn]
+
+  dynamic "tag" {
+    for_each = {
+      Name = "${var.env}-private-instance-asg-${count.index + 1}"
+    }
+
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+

@@ -4,6 +4,12 @@ variable "account_id" {
   default     = ""
 }
 
+variable "vpc_id" {
+  description = "The VPC ID"
+  type        = string
+  default     = ""
+}
+
 variable "region" {
   description = "The AWS region"
   type        = string

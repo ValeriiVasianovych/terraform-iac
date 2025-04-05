@@ -49,7 +49,12 @@ variable "db_private_subnet_ids" {
 variable "key_name" {
   description = "Name of the SSH key pair for EC2 instances"
   type        = string
-  default     = "ServersKey"
+}
+
+variable "instance_type_bastion" {
+  description = "EC2 instance type for the bastion host"
+  type        = string
+  default     = "t2.micro"
 }
 
 variable "instance_type_public_instance" {

@@ -1,13 +1,12 @@
-
 resource "aws_launch_template" "bastion_host" {
-  count                  = length(var.public_subnet_ids) > 0 ? 1 : 0
-  image_id               = var.ami
-  instance_type          = var.instance_type_public_instance
-  key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.public_sg.id]
+  count         = length(var.public_subnet_ids) > 0 ? 1 : 0
+  image_id      = var.ami
+  instance_type = var.instance_type_bastion
+  key_name      = var.key_name
   #user_data = filebase64("${path.module}/script.sh")
   network_interfaces {
-  associate_public_ip_address = true
+    associate_public_ip_address = true
+    security_groups             = [aws_security_group.public_sg.id]
   }
 
   metadata_options {
@@ -15,7 +14,7 @@ resource "aws_launch_template" "bastion_host" {
     http_tokens   = "required"
   }
   tags = {
-    Name = "bastion-host-launch-template"
+    Name = "${var.env}-bastion-host-lt"
   }
 }
 
@@ -32,7 +31,7 @@ resource "aws_autoscaling_group" "bastion_host" {
   }
   dynamic "tag" {
     for_each = {
-      Name   = "bastion-host-auto-scaling-group"
+      Name = "${var.env}-bastion-host-asg-${count.index + 1}"
     }
     content {
       key                 = tag.key

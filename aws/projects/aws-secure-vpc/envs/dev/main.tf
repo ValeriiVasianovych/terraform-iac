@@ -26,8 +26,8 @@ module "vpc_dev" {
   region                  = "us-east-1"
   env                     = "development"
   vpc_cidr                = "10.0.0.0/16"
-  public_subnet_cidrs     = ["10.0.10.0/24", "10.0.11.0/24"]
-  private_subnet_cidrs    = []
+  public_subnet_cidrs     = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
+  private_subnet_cidrs    = ["10.0.20.0/24", "10.0.21.0/24", "10.0.22.0/24"]
   db_private_subnet_cidrs = []
   account_id              = data.aws_caller_identity.current.id
 }
@@ -43,14 +43,15 @@ module "compute_dev" {
   account_id            = data.aws_caller_identity.current.id
 
   # Instance parameters
-  instance_type_public_instance  = "t2.micro"
-  instance_type_private_instance = "t2.micro"
-  instance_type_db_instance      = "db.t2.micro"
+  instance_type_bastion          = var.instance_types["bastion"]
+  instance_type_public_instance  = var.instance_types["public_instance"]
+  instance_type_private_instance = var.instance_types["private_instance"]
+  instance_type_db_instance      = var.instance_types["db_instance"]
   ami                            = data.aws_ami.latest_ubuntu.id
-  key_name                       = "aws_ssh_key"
+  key_name                       = var.key_name
   public_sg                      = [22, 443, 1194, 943]
-  private_sg                     = [22, 443, 5000]
-  db_private_sg                  = [22, 3306]
+  private_sg                     = [22, 80, 443, 5000]
+  db_private_sg                  = []
 
   depends_on = [module.vpc_dev]
 }
