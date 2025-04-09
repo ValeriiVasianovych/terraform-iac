@@ -39,6 +39,11 @@ variable "key_name" {
   type        = string
 }
 
+variable "hosted_zone_name" {
+  description = "The name of the hosted zone"
+  type        = string
+}
+
 variable "instance_types" {
   description = "Map of instance types for different components"
   type        = map(string)

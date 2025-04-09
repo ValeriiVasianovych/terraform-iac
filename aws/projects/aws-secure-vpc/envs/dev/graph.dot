@@ -1,0 +1,93 @@
+digraph G {
+  rankdir=LR;
+  bgcolor="#ffffff";
+  node [
+      shape=box,
+      style=filled,
+      color="#61afef",
+      fillcolor="#282c34",
+      fontcolor="white",
+      fontname="Fira Code"
+      backgroundcolor="#ffffff"
+  ];
+  edge [
+      color="#c678dd",
+      fontname="Fira Code"
+  ];
+  subgraph "cluster_module.compute_dev" {
+    label = "module.compute_dev"
+    fontname = "sans-serif"
+    "module.compute_dev.aws_autoscaling_group.bastion_host" [label="aws_autoscaling_group.bastion_host"];
+    "module.compute_dev.aws_autoscaling_group.private_instance_asg" [label="aws_autoscaling_group.private_instance_asg"];
+    "module.compute_dev.aws_launch_template.bastion_host" [label="aws_launch_template.bastion_host"];
+    "module.compute_dev.aws_launch_template.private_instance_lt" [label="aws_launch_template.private_instance_lt"];
+    "module.compute_dev.aws_lb.private_instance_alb" [label="aws_lb.private_instance_alb"];
+    "module.compute_dev.aws_lb_listener.private_instance_listener" [label="aws_lb_listener.private_instance_listener"];
+    "module.compute_dev.aws_lb_target_group.private_instance_tg" [label="aws_lb_target_group.private_instance_tg"];
+    "module.compute_dev.aws_security_group.db_sg" [label="aws_security_group.db_sg"];
+    "module.compute_dev.aws_security_group.private_sg" [label="aws_security_group.private_sg"];
+    "module.compute_dev.aws_security_group.public_sg" [label="aws_security_group.public_sg"];
+  }
+  subgraph "cluster_module.vpc_dev" {
+    label = "module.vpc_dev"
+    fontname = "sans-serif"
+    "module.vpc_dev.data.aws_availability_zones.available" [label="data.aws_availability_zones.available"];
+    "module.vpc_dev.aws_eip.nat" [label="aws_eip.nat"];
+    "module.vpc_dev.aws_internet_gateway.main" [label="aws_internet_gateway.main"];
+    "module.vpc_dev.aws_nat_gateway.nat" [label="aws_nat_gateway.nat"];
+    "module.vpc_dev.aws_route_table.db_private_subnets" [label="aws_route_table.db_private_subnets"];
+    "module.vpc_dev.aws_route_table.private_subnets" [label="aws_route_table.private_subnets"];
+    "module.vpc_dev.aws_route_table.public_subnets" [label="aws_route_table.public_subnets"];
+    "module.vpc_dev.aws_route_table_association.db_private_routes" [label="aws_route_table_association.db_private_routes"];
+    "module.vpc_dev.aws_route_table_association.private_routes" [label="aws_route_table_association.private_routes"];
+    "module.vpc_dev.aws_route_table_association.public_routes" [label="aws_route_table_association.public_routes"];
+    "module.vpc_dev.aws_subnet.db_private_subnets" [label="aws_subnet.db_private_subnets"];
+    "module.vpc_dev.aws_subnet.private_subnets" [label="aws_subnet.private_subnets"];
+    "module.vpc_dev.aws_subnet.public_subnets" [label="aws_subnet.public_subnets"];
+    "module.vpc_dev.aws_vpc.main" [label="aws_vpc.main"];
+  }
+  "module.compute_dev.aws_autoscaling_group.bastion_host" -> "module.compute_dev.aws_launch_template.bastion_host";
+  "module.compute_dev.aws_autoscaling_group.private_instance_asg" -> "module.compute_dev.aws_launch_template.private_instance_lt";
+  "module.compute_dev.aws_autoscaling_group.private_instance_asg" -> "module.compute_dev.aws_lb_target_group.private_instance_tg";
+  "module.compute_dev.aws_launch_template.bastion_host" -> "data.aws_ami.latest_ubuntu";
+  "module.compute_dev.aws_launch_template.bastion_host" -> "module.compute_dev.aws_security_group.public_sg";
+  "module.compute_dev.aws_launch_template.private_instance_lt" -> "data.aws_ami.latest_ubuntu";
+  "module.compute_dev.aws_launch_template.private_instance_lt" -> "module.compute_dev.aws_security_group.private_sg";
+  "module.compute_dev.aws_lb.private_instance_alb" -> "module.compute_dev.aws_security_group.private_sg";
+  "module.compute_dev.aws_lb_listener.private_instance_listener" -> "module.compute_dev.aws_lb.private_instance_alb";
+  "module.compute_dev.aws_lb_listener.private_instance_listener" -> "module.compute_dev.aws_lb_target_group.private_instance_tg";
+  "module.compute_dev.aws_lb_target_group.private_instance_tg" -> "data.aws_caller_identity.current";
+  "module.compute_dev.aws_lb_target_group.private_instance_tg" -> "module.vpc_dev.aws_route_table_association.db_private_routes";
+  "module.compute_dev.aws_lb_target_group.private_instance_tg" -> "module.vpc_dev.aws_route_table_association.private_routes";
+  "module.compute_dev.aws_lb_target_group.private_instance_tg" -> "module.vpc_dev.aws_route_table_association.public_routes";
+  "module.compute_dev.aws_security_group.db_sg" -> "data.aws_caller_identity.current";
+  "module.compute_dev.aws_security_group.db_sg" -> "module.vpc_dev.aws_route_table_association.db_private_routes";
+  "module.compute_dev.aws_security_group.db_sg" -> "module.vpc_dev.aws_route_table_association.private_routes";
+  "module.compute_dev.aws_security_group.db_sg" -> "module.vpc_dev.aws_route_table_association.public_routes";
+  "module.compute_dev.aws_security_group.private_sg" -> "data.aws_caller_identity.current";
+  "module.compute_dev.aws_security_group.private_sg" -> "module.vpc_dev.aws_route_table_association.db_private_routes";
+  "module.compute_dev.aws_security_group.private_sg" -> "module.vpc_dev.aws_route_table_association.private_routes";
+  "module.compute_dev.aws_security_group.private_sg" -> "module.vpc_dev.aws_route_table_association.public_routes";
+  "module.compute_dev.aws_security_group.public_sg" -> "data.aws_caller_identity.current";
+  "module.compute_dev.aws_security_group.public_sg" -> "module.vpc_dev.aws_route_table_association.db_private_routes";
+  "module.compute_dev.aws_security_group.public_sg" -> "module.vpc_dev.aws_route_table_association.private_routes";
+  "module.compute_dev.aws_security_group.public_sg" -> "module.vpc_dev.aws_route_table_association.public_routes";
+  "module.vpc_dev.aws_internet_gateway.main" -> "module.vpc_dev.aws_vpc.main";
+  "module.vpc_dev.aws_nat_gateway.nat" -> "module.vpc_dev.aws_eip.nat";
+  "module.vpc_dev.aws_nat_gateway.nat" -> "module.vpc_dev.aws_subnet.public_subnets";
+  "module.vpc_dev.aws_route_table.db_private_subnets" -> "module.vpc_dev.aws_vpc.main";
+  "module.vpc_dev.aws_route_table.private_subnets" -> "module.vpc_dev.aws_nat_gateway.nat";
+  "module.vpc_dev.aws_route_table.public_subnets" -> "module.vpc_dev.aws_internet_gateway.main";
+  "module.vpc_dev.aws_route_table_association.db_private_routes" -> "module.vpc_dev.aws_route_table.db_private_subnets";
+  "module.vpc_dev.aws_route_table_association.db_private_routes" -> "module.vpc_dev.aws_subnet.db_private_subnets";
+  "module.vpc_dev.aws_route_table_association.private_routes" -> "module.vpc_dev.aws_route_table.private_subnets";
+  "module.vpc_dev.aws_route_table_association.private_routes" -> "module.vpc_dev.aws_subnet.private_subnets";
+  "module.vpc_dev.aws_route_table_association.public_routes" -> "module.vpc_dev.aws_route_table.public_subnets";
+  "module.vpc_dev.aws_route_table_association.public_routes" -> "module.vpc_dev.aws_subnet.public_subnets";
+  "module.vpc_dev.aws_subnet.db_private_subnets" -> "module.vpc_dev.data.aws_availability_zones.available";
+  "module.vpc_dev.aws_subnet.db_private_subnets" -> "module.vpc_dev.aws_vpc.main";
+  "module.vpc_dev.aws_subnet.private_subnets" -> "module.vpc_dev.data.aws_availability_zones.available";
+  "module.vpc_dev.aws_subnet.private_subnets" -> "module.vpc_dev.aws_vpc.main";
+  "module.vpc_dev.aws_subnet.public_subnets" -> "module.vpc_dev.data.aws_availability_zones.available";
+  "module.vpc_dev.aws_subnet.public_subnets" -> "module.vpc_dev.aws_vpc.main";
+}

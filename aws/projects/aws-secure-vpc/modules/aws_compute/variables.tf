@@ -16,6 +16,12 @@ variable "env" {
   default     = "test"
 }
 
+variable "bastion_ami" {
+  description = "Amazon Machine Image ID for the bastion host"
+  type        = string
+  default     = ""
+}
+
 variable "ami" {
   description = "Amazon Machine Image ID for EC2 instances"
   type        = string
@@ -91,4 +97,14 @@ variable "db_private_sg" {
   description = "The ports for the database security group: mySQL"
   type        = list(string)
   default     = [22, 3306]
+}
+
+variable "hosted_zone_name" {
+  description = "The name of the hosted zone"
+  type        = string
+}
+
+variable "hosted_zone_id" {
+  description = "The id of the hosted zone"
+  type        = string
 }

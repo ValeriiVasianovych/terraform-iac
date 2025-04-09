@@ -1,6 +1,6 @@
 resource "aws_launch_template" "bastion_host" {
   count         = length(var.public_subnet_ids) > 0 ? 1 : 0
-  image_id      = var.ami
+  image_id      = var.bastion_ami
   instance_type = var.instance_type_bastion
   key_name      = var.key_name
   #user_data = filebase64("${path.module}/script.sh")

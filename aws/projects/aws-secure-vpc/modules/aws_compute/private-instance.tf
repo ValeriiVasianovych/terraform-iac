@@ -1,6 +1,10 @@
 # Creation of ALB for private instances
+locals {
+  valid_subnets = length(var.private_subnet_ids) >= 2
+}
+
 resource "aws_lb" "private_instance_alb" {
-  count              = length(var.private_subnet_ids) > 0 ? 1 : 0
+  count              = local.valid_subnets ? 1 : 0
   name               = "${var.env}-private-instance-alb"
   internal           = true
   load_balancer_type = "application"
@@ -13,7 +17,7 @@ resource "aws_lb" "private_instance_alb" {
 }
 
 resource "aws_lb_target_group" "private_instance_tg" {
-  count       = length(var.private_subnet_ids) > 0 ? 1 : 0
+  count       = local.valid_subnets ? 1 : 0
   name        = "${var.env}-private-instance-tg"
   port        = 80
   protocol    = "HTTP"
@@ -34,17 +38,33 @@ resource "aws_lb_target_group" "private_instance_tg" {
   }
 }
 
-resource "aws_lb_listener" "private_instance_listener" {
-  count             = length(var.private_subnet_ids) > 0 ? 1 : 0
+resource "aws_lb_listener" "private_instance_listener_https" {
+  count             = length(var.private_subnet_ids) >= 2 ? 1 : 0
   load_balancer_arn = aws_lb.private_instance_alb[0].arn
-  port              = "80"
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = aws_acm_certificate_validation.app_cert.certificate_arn
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.private_instance_tg[0].arn
   }
+
+  depends_on = [aws_acm_certificate_validation.app_cert]
 }
+
+# resource "aws_lb_listener" "private_instance_listener" {
+#   count             = local.valid_subnets ? 1 : 0
+#   load_balancer_arn = aws_lb.private_instance_alb[0].arn
+#   port              = "80"
+#   protocol          = "HTTP"
+
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.private_instance_tg[0].arn
+#   }
+# }
 
 # Creation of ASG for private instances
 resource "aws_launch_template" "private_instance_lt" {
@@ -79,7 +99,7 @@ resource "aws_autoscaling_group" "private_instance_asg" {
     version = "$Latest"
   }
 
-  target_group_arns = [aws_lb_target_group.private_instance_tg[0].arn]
+  target_group_arns = local.valid_subnets ? [aws_lb_target_group.private_instance_tg[0].arn] : []
 
   dynamic "tag" {
     for_each = {

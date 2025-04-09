@@ -26,8 +26,8 @@ module "vpc_dev" {
   region                  = "us-east-1"
   env                     = "development"
   vpc_cidr                = "10.0.0.0/16"
-  public_subnet_cidrs     = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
-  private_subnet_cidrs    = ["10.0.20.0/24", "10.0.21.0/24", "10.0.22.0/24"]
+  public_subnet_cidrs     = ["10.0.10.0/24", "10.0.11.0/24"]
+  private_subnet_cidrs    = ["10.0.20.0/24", "10.0.21.0/24"]
   db_private_subnet_cidrs = []
   account_id              = data.aws_caller_identity.current.id
 }
@@ -47,9 +47,12 @@ module "compute_dev" {
   instance_type_public_instance  = var.instance_types["public_instance"]
   instance_type_private_instance = var.instance_types["private_instance"]
   instance_type_db_instance      = var.instance_types["db_instance"]
+  bastion_ami                    = data.aws_ami.latest_openvpn.id
   ami                            = data.aws_ami.latest_ubuntu.id
   key_name                       = var.key_name
-  public_sg                      = [22, 443, 1194, 943]
+  hosted_zone_name               = var.hosted_zone_name
+  hosted_zone_id                 = data.aws_route53_zone.hosted_zone.zone_id
+  public_sg                      = [22, 443, 1194, 943, 945]
   private_sg                     = [22, 80, 443, 5000]
   db_private_sg                  = []
 

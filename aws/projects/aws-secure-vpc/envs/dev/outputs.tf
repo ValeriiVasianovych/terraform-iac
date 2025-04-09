@@ -43,3 +43,16 @@ output "db_private_subnet_ids" {
 #   value = module.bastion_host.public_ip
 # }
 
+# output "hosted_zone_id" {
+#   value = module.aws_route53_zone.hosted_zone.zone_id
+# }
+
+
+
+# output "bastion_host_public_ip" {
+#   value = module.compute_dev.bastion_host_public_ip
+# }
+
+output "compute_alb_hosted_zone_id" {
+  value = module.compute_dev.alb_hosted_zone_id
+}

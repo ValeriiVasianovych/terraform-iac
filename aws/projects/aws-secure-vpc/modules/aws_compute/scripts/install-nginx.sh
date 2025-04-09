@@ -18,8 +18,8 @@ cat <<EOF > /var/www/html/index.html
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background: #000000;
-            color: goldenrod;
+            background: linear-gradient(135deg, #2f74c0, #00bfb3);
+            color: #ffffff;
             text-align: center;
             height: 100vh;
             display: flex;

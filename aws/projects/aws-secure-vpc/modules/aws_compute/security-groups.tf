@@ -17,7 +17,7 @@ resource "aws_security_group" "public_sg" {
   dynamic "ingress" {
     for_each = [for port in var.public_sg : port if port == 1194]
     content {
-      from_port   = ingress.value
+      from_port   = ingress.value 
       to_port     = ingress.value
       protocol    = "udp"
       cidr_blocks = ["0.0.0.0/0"]

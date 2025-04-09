@@ -8,3 +8,27 @@ data "aws_ami" "latest_ubuntu" {
   }
 }
 
+data "aws_ami" "latest_openvpn" {
+  owners      = ["444663524611"]
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["OpenVPN Access Server Community Image"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+}
+
+data "aws_route53_zone" "hosted_zone" {
+  name = var.hosted_zone_name
+}
+
