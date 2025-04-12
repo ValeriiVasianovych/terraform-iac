@@ -108,3 +108,9 @@ variable "hosted_zone_id" {
   description = "The id of the hosted zone"
   type        = string
 }
+
+locals {
+  valid_subnets       = length(var.private_subnet_ids) > 0
+  use_nlb             = length(var.private_subnet_ids) == 1
+  use_alb             = length(var.private_subnet_ids) >= 2
+}

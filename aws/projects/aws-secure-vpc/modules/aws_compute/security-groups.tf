@@ -1,6 +1,7 @@
 # SG for bastion host 80 443 and 22
 
 resource "aws_security_group" "public_sg" {
+  count       = length(var.public_subnet_ids) > 0 ? 1 : 0
   name        = "${var.env}-security-group-public"
   vpc_id      = var.vpc_id
   description = "Allows traffic for instances in public subnets"
@@ -36,6 +37,7 @@ resource "aws_security_group" "public_sg" {
 }
 
 resource "aws_security_group" "private_sg" {
+  count       = length(var.private_subnet_ids) > 0 ? 1 : 0
   name        = "${var.env}-security-group-private"
   vpc_id      = var.vpc_id
   description = "Allows traffic for instances in public subnets"
@@ -45,7 +47,7 @@ resource "aws_security_group" "private_sg" {
       from_port   = ingress.value
       to_port     = ingress.value
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["10.0.0.0/16"]
     }
   }
   egress {
@@ -60,6 +62,7 @@ resource "aws_security_group" "private_sg" {
 }
 
 resource "aws_security_group" "db_sg" {
+  count       = length(var.db_private_subnet_ids) > 0 ? 1 : 0
   name        = "${var.env}-security-group-db"
   vpc_id      = var.vpc_id
   description = "Allows traffic for instances in public subnets"
@@ -69,7 +72,7 @@ resource "aws_security_group" "db_sg" {
       from_port   = ingress.value
       to_port     = ingress.value
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["10.0.0.0/16"]
     }
   }
   egress {

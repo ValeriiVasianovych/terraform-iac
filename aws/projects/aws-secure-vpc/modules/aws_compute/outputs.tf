@@ -1,23 +1,34 @@
-# output "bastion_host_public_ip" {
-#   value = length(var.public_subnet_ids) > 0 ? aws_autoscaling_group.bastion_host[0].instances[0].public_ip : null
-# }
-
-# data "aws_autoscaling_group" "bastion_group" {
-#   name = aws_autoscaling_group.bastion_host.name
-# }
-
-# data "aws_instance" "bastion_instance" {
-#   instance_id = data.aws_autoscaling_group.bastion_group.instances[0].instance_id
-# }
-
-# output "bastion_host_public_ip" {
-#   value = length(var.public_subnet_ids) > 0 ? data.aws_instance.bastion_instance.public_ip : null
-# }
-
-output "route53_hosted_zone_id" {
-  value = aws_route53_record.app_domain_record.zone_id
+output "bastion_instance_id" {
+  value       = length(var.public_subnet_ids) > 0 ? data.aws_instances.bastion_instances[0].ids : []
+  description = "List of IDs of the bastion instances managed by the ASG."
 }
 
-output "alb_hosted_zone_id" {
-  value = length(var.private_subnet_ids) > 0 ? aws_lb.private_instance_alb[0].zone_id : null
+output "bastion_instance_ip" {
+  value       = length(var.public_subnet_ids) > 0 ? data.aws_instances.bastion_instances[0].public_ips : []
+  description = "List of public IPs of the bastion instances managed by the ASG."
+}
+
+output "bastion_host_azs" {
+  value       = length(var.public_subnet_ids) > 0 ? [data.aws_subnet.public_subnets[0].availability_zone] : []
+  description = "List of Availability Zones of the bastion instances."
+}
+
+output "private_instance_id" {
+  value       = local.valid_subnets ? data.aws_instances.private_instances[0].ids : []
+  description = "List of IDs of the private instances managed by the ASG."
+}
+
+output "private_instance_ip" {
+  value       = local.valid_subnets ? data.aws_instances.private_instances[0].private_ips : []
+  description = "List of private IPs of the private instances managed by the ASG."
+}
+
+output "private_instances_azs" {
+  value       = local.valid_subnets ? (local.use_nlb ? [data.aws_subnet.private_subnets[0].availability_zone] : [for subnet in data.aws_subnet.private_subnets : subnet.availability_zone]) : []
+  description = "List of Availability Zones of the private instances."
+}
+
+output "application_domain_name" {
+  value       = local.valid_subnets ? aws_route53_record.app_domain_record[0].fqdn : null
+  description = "The fully qualified domain name (FQDN) of the application, or null if no private subnets are created."
 }

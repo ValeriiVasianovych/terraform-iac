@@ -1,14 +1,59 @@
-# Creation of ALB for private instances
-locals {
-  valid_subnets = length(var.private_subnet_ids) >= 2
+# Creation of NLB for private instances
+resource "aws_lb" "private_instance_nlb" {
+  count              = local.use_nlb ? 1 : 0
+  name               = "${var.env}-private-instance-nlb"
+  internal           = true
+  load_balancer_type = "network"
+  subnets            = var.private_subnet_ids
+
+  tags = {
+    Name = "${var.env}-private-instance-nlb"
+  }
 }
 
+resource "aws_lb_target_group" "private_instance_tg_nlb" {
+  count       = local.use_nlb ? 1 : 0
+  name        = "${var.env}-private-tg-nlb"
+  port        = 80
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  target_type = "instance"
+
+  health_check {
+    protocol            = "TCP"
+    interval            = 30
+    timeout             = 10
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+
+  tags = {
+    Name = "${var.env}-private-tg-nlb"
+  }
+}
+
+resource "aws_lb_listener" "private_instance_listener_nlb_tls" {
+  count             = local.use_nlb ? 1 : 0
+  load_balancer_arn = aws_lb.private_instance_nlb[0].arn
+  port              = 443
+  protocol          = "TLS"
+  certificate_arn   = aws_acm_certificate_validation.app_cert[0].certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.private_instance_tg_nlb[0].arn
+  }
+
+  depends_on = [aws_acm_certificate_validation.app_cert]
+}
+
+# Creation of ALB for private instances
 resource "aws_lb" "private_instance_alb" {
-  count              = local.valid_subnets ? 1 : 0
+  count              = local.use_alb ? 1 : 0
   name               = "${var.env}-private-instance-alb"
   internal           = true
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.private_sg.id]
+  security_groups    = length(var.private_subnet_ids) > 0 ? [aws_security_group.private_sg[0].id] : []
   subnets            = var.private_subnet_ids
 
   tags = {
@@ -16,9 +61,9 @@ resource "aws_lb" "private_instance_alb" {
   }
 }
 
-resource "aws_lb_target_group" "private_instance_tg" {
-  count       = local.valid_subnets ? 1 : 0
-  name        = "${var.env}-private-instance-tg"
+resource "aws_lb_target_group" "private_instance_tg_alb" {
+  count       = local.use_alb ? 1 : 0
+  name        = "${var.env}-private-tg-alb"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -33,22 +78,23 @@ resource "aws_lb_target_group" "private_instance_tg" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
+
   tags = {
-    Name = "${var.env}-private-instance-tg"
+    Name = "${var.env}-private-tg-alb"
   }
 }
 
-resource "aws_lb_listener" "private_instance_listener_https" {
-  count             = length(var.private_subnet_ids) >= 2 ? 1 : 0
+resource "aws_lb_listener" "private_instance_listener_alb_https" {
+  count             = local.use_alb ? 1 : 0
   load_balancer_arn = aws_lb.private_instance_alb[0].arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = aws_acm_certificate_validation.app_cert.certificate_arn
+  certificate_arn   = aws_acm_certificate_validation.app_cert[0].certificate_arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.private_instance_tg[0].arn
+    target_group_arn = aws_lb_target_group.private_instance_tg_alb[0].arn
   }
 
   depends_on = [aws_acm_certificate_validation.app_cert]
@@ -68,14 +114,14 @@ resource "aws_lb_listener" "private_instance_listener_https" {
 
 # Creation of ASG for private instances
 resource "aws_launch_template" "private_instance_lt" {
-  count         = length(var.private_subnet_ids) > 0 ? 1 : 0
+  count         = local.valid_subnets ? 1 : 0
   image_id      = var.ami
   instance_type = var.instance_type_private_instance
   key_name      = var.key_name
   user_data     = filebase64("${path.module}/scripts/install-nginx.sh")
   network_interfaces {
     associate_public_ip_address = false
-    security_groups             = [aws_security_group.private_sg.id]
+    security_groups             = length(var.private_subnet_ids) > 0 ? [aws_security_group.private_sg[0].id] : []
   }
 
   metadata_options {
@@ -88,10 +134,10 @@ resource "aws_launch_template" "private_instance_lt" {
 }
 
 resource "aws_autoscaling_group" "private_instance_asg" {
-  count               = length(var.private_subnet_ids) > 0 ? 1 : 0
+  count               = local.valid_subnets ? 1 : 0
   vpc_zone_identifier = var.private_subnet_ids
-  desired_capacity    = length(var.private_subnet_ids)
-  max_size            = length(var.private_subnet_ids)
+  desired_capacity    = local.use_nlb ? 2 : length(var.private_subnet_ids)
+  max_size            = local.use_nlb ? 2 : length(var.private_subnet_ids)
   min_size            = 1
 
   launch_template {
@@ -99,15 +145,15 @@ resource "aws_autoscaling_group" "private_instance_asg" {
     version = "$Latest"
   }
 
-  target_group_arns = local.valid_subnets ? [aws_lb_target_group.private_instance_tg[0].arn] : []
+  target_group_arns = local.valid_subnets ? (local.use_nlb ? [aws_lb_target_group.private_instance_tg_nlb[0].arn] : [aws_lb_target_group.private_instance_tg_alb[0].arn]) : []
 
   dynamic "tag" {
     for_each = {
-      Name = "${var.env}-private-instance-asg-${count.index + 1}"
+      for idx in range(local.use_nlb ? 2 : length(var.private_subnet_ids)) : 
+      "Name-${idx}" => "${var.env}-app-private-instance-${idx + 1}"
     }
-
     content {
-      key                 = tag.key
+      key                 = "Name"
       value               = tag.value
       propagate_at_launch = true
     }

@@ -1,4 +1,4 @@
-resource "aws_launch_template" "bastion_host" {
+resource "aws_launch_template" "bastion_instance" {
   count         = length(var.public_subnet_ids) > 0 ? 1 : 0
   image_id      = var.bastion_ami
   instance_type = var.instance_type_bastion
@@ -6,7 +6,7 @@ resource "aws_launch_template" "bastion_host" {
   #user_data = filebase64("${path.module}/script.sh")
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group.public_sg.id]
+    security_groups             = length(var.public_subnet_ids) > 0 ? [aws_security_group.public_sg[0].id] : []
   }
 
   metadata_options {
@@ -18,7 +18,7 @@ resource "aws_launch_template" "bastion_host" {
   }
 }
 
-resource "aws_autoscaling_group" "bastion_host" {
+resource "aws_autoscaling_group" "bastion_instance" {
   count               = length(var.public_subnet_ids) > 0 ? 1 : 0
   vpc_zone_identifier = var.public_subnet_ids
   desired_capacity    = 1
@@ -26,18 +26,13 @@ resource "aws_autoscaling_group" "bastion_host" {
   min_size            = 1
 
   launch_template {
-    id      = aws_launch_template.bastion_host[0].id
+    id      = aws_launch_template.bastion_instance[0].id
     version = "$Latest"
   }
-  dynamic "tag" {
-    for_each = {
-      Name = "${var.env}-bastion-host-asg-${count.index + 1}"
-    }
-    content {
-      key                 = tag.key
-      value               = tag.value
-      propagate_at_launch = true
-    }
+  tag {
+    key                 = "Name"
+    value               = "${var.env}-bastion-host"
+    propagate_at_launch = true
   }
   lifecycle {
     create_before_destroy = true

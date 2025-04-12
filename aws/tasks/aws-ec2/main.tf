@@ -15,6 +15,7 @@ provider "aws" {
 resource "aws_instance" "ubuntu_ec2" {
     count = var.count_instance
     ami = data.aws_ami.latest_ubuntu.id
+    availability_zone = "${var.region}a"
     instance_type = var.instance_type
     key_name = var.key_name
     user_data = file("${path.module}/install-nginx.sh")
