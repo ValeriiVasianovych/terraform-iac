@@ -23,11 +23,11 @@ provider "aws" {
 
 module "vpc_dev" {
   source                  = "../../modules/aws_vpc"
-  region                  = "us-east-1"
-  env                     = "development"
+  region                  = var.region
+  env                     = var.env
   vpc_cidr                = "10.0.0.0/16"
-  public_subnet_cidrs     = ["10.0.10.0/24", "10.0.11.0/24"]
-  private_subnet_cidrs    = ["10.0.20.0/24", "10.0.21.0/24"]
+  public_subnet_cidrs     = []
+  private_subnet_cidrs    = []
   db_private_subnet_cidrs = []
   account_id              = data.aws_caller_identity.current.id
 }
@@ -40,9 +40,11 @@ module "compute_dev" {
   public_subnet_ids     = module.vpc_dev.public_subnet_ids
   private_subnet_ids    = module.vpc_dev.private_subnet_ids
   db_private_subnet_ids = module.vpc_dev.db_private_subnet_ids
+  client_vpn_cidr_block = "10.200.0.0/22"
+  vpn_server_cert_arn   = var.vpn_server_cert_arn
+  vpn_client_cert_arn   = var.vpn_client_cert_arn
   account_id            = data.aws_caller_identity.current.id
 
-  # Instance parameters
   instance_type_bastion          = var.instance_types["bastion"]
   instance_type_public_instance  = var.instance_types["public_instance"]
   instance_type_private_instance = var.instance_types["private_instance"]

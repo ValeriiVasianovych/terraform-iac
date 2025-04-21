@@ -109,8 +109,27 @@ variable "hosted_zone_id" {
   type        = string
 }
 
+variable "client_vpn_cidr_block" {
+  description = "The id of the hosted zone"
+  type        = string
+  default = "10.200.0.0/22"
+}
+
+variable "vpn_server_cert_arn" {
+  description = "The name of the server certificate"
+  type        = string
+}
+
+variable "vpn_client_cert_arn" {
+  description = "The name of the client certificate"
+  type        = string
+}
+
 locals {
-  valid_subnets       = length(var.private_subnet_ids) > 0
-  use_nlb             = length(var.private_subnet_ids) == 1
-  use_alb             = length(var.private_subnet_ids) >= 2
+  create_public_resources  = length(var.public_subnet_ids) > 0
+  create_private_resources = length(var.private_subnet_ids) > 0
+  create_db_resources      = length(var.db_private_subnet_ids) > 0
+
+  use_nlb       = local.create_private_resources && length(var.private_subnet_ids) == 1
+  use_alb       = local.create_private_resources && length(var.private_subnet_ids) >= 2
 }

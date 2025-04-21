@@ -15,25 +15,26 @@ output "vpc_cidr_block" {
 }
 
 output "public_subnet_cidr_blocks" {
-  value = length(aws_subnet.public_subnets) > 0 ? aws_subnet.public_subnets[*].cidr_block : ["No public subnets created"]
+  value = length(aws_subnet.public_subnets) > 0 ? aws_subnet.public_subnets[*].cidr_block : []
 }
 
 output "public_subnet_ids" {
-  value = length(aws_subnet.public_subnets) > 0 ? aws_subnet.public_subnets[*].id : ["No public subnets created"]
+  value = length(aws_subnet.public_subnets) > 0 ? aws_subnet.public_subnets[*].id : []
 }
 
 output "private_subnet_cidr_blocks" {
-  value = length(aws_subnet.private_subnets) > 0 ? aws_subnet.private_subnets[*].cidr_block : ["No private subnets created"]
+  value = length(aws_subnet.private_subnets) > 0 ? aws_subnet.private_subnets[*].cidr_block : []
 }
 
 output "private_subnet_ids" {
-  value = length(aws_subnet.private_subnets) > 0 ? aws_subnet.private_subnets[*].id : ["No private subnets created"]
+  value = length(aws_subnet.private_subnets) > 0 ? aws_subnet.private_subnets[*].id : []
 }
 
 output "db_private_subnet_cidr_blocks" {
-  value = length(aws_subnet.db_private_subnets) > 0 ? aws_subnet.db_private_subnets[*].cidr_block : ["No database private subnets created"]
+  value = length(aws_subnet.db_private_subnets) > 0 ? aws_subnet.db_private_subnets[*].cidr_block : []
+
 }
 
 output "db_private_subnet_ids" {
-  value = length(aws_subnet.db_private_subnets) > 0 ? aws_subnet.db_private_subnets[*].id : ["No database private subnets created"]
+  value = length(aws_subnet.db_private_subnets) > 0 ? aws_subnet.db_private_subnets[*].id : []
 }

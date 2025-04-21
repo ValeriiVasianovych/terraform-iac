@@ -54,3 +54,14 @@ variable "instance_types" {
     db_instance      = "db.t2.micro"
   }
 }
+
+variable "vpn_server_cert_arn" {
+  description = "The name of the server certificate"
+  type        = string
+}
+
+variable "vpn_client_cert_arn" {
+  description = "The name of the client certificate"
+  type        = string
+}
+
