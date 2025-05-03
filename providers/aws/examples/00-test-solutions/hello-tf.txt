@@ -1,0 +1,2 @@
+Hello from Terraform!
+This is example of returning a string from Terraform using outputs.
