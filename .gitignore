@@ -22,7 +22,7 @@ crash.log
 *.pem
 *.key
 *.crt
-*.json
+.json
 
 # Terraform provider overrides
 .override.tf
