@@ -5,7 +5,6 @@ terraform {
     container_name       = "tfstate"
     key                  = "examples/01-resource-group/terraform.tfstate"
   }
-
 }
 
 provider "azurerm" {
